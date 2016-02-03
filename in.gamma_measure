@@ -1,0 +1,7 @@
+#set up simulation
+dimension 3
+
+neighbor 0.3 bin
+neigh_modify delay 5
+
+atom_style atomic
