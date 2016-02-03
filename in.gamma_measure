@@ -1,7 +1,35 @@
 #set up simulation
+units si
 dimension 3
+boundary p p p 
 
 neighbor 0.3 bin
 neigh_modify delay 5
 
 atom_style atomic
+
+#create atom set up
+
+
+lattice fcc 4.0 #hex with x unit spacing
+region mybox sphere 0.0 0.0 0.0 5 #position, radius
+create_box 1 mybox #create N atoms in box in region M
+create_atoms 1 region mybox
+
+mass 1 1.0
+
+#potential set up
+pair_style lj/cut 2.5 #lennard/jones 
+pair_coeff * * 1.0 1.0 2.5
+
+#velocity all scale 0.5 #set temperature of all atoms
+
+velocity all create 300.0 22 rot yes dist gaussian
+
+#should put in fix commands
+#output settings
+
+thermo 50 #output thermodynamics every N timesteps
+dump 1 all image 50 image.*.jpg type type zoom 1.6
+
+run 1000
