@@ -1,3 +1,8 @@
+#choose different screening lengths!
+#look up two point correlation
+#or another way to classify lattice vs non lattice
+#
+#page 201 in intro to modern stat. 
 units metal
 dimension 3
 boundary p p p
@@ -6,36 +11,110 @@ atom_style atomic
 neighbor	0.3 bin
 neigh_modify	delay 5
 
-lattice bcc 3.0
-region inthezone block 0 15 0 15 0 15
+variable xlo equal 0
+variable ylo equal 0
+variable zlo equal 0
+variable xhi equal 25
+variable yhi equal 25
+variable zhi equal 25
+variable volume equal (xhi-xlo)*(yhi-ylo)*(zhi-zlo)
+
+lattice bcc 2
+region inthezone block 0 25 0 25 0 25
 create_box 2 inthezone
 
-mass 1 1.0
-mass 2 1.0
+mass 1 204.38 #thallium
+mass 2 204.38
 
-region center block 0 6 0 6 0 6
+region corner block 0 3 0 3 0 3
+region freezers block 4 9 4 9 4 9
 
-create_atoms 1 region center
+create_atoms 1 region corner
+create_atoms 2 region freezers
 
-pair_style	yukawa 1.0 2.5
-pair_coeff	* * 1.0
+pair_style	yukawa 1.0 10.0 #kappa (1/angstrom), cutoff (angstrom)
+#debye length = sqrt((permittivity)(boltzmann)(electron temperature)/(electron density))/(e-)
 
+
+
+#make screening length long to test
+#for thallium, this is 1.55e-24 Joules * metres
+pair_coeff	* * 129.5 #thallium-thallium
+#A=energy*distance, cutoff = distance
 group type1 type 1
+group freezer type 2 
+#have to take into account density to get radius
+#and kappa is inverse debye length
+#start as a lattice, see if it stays.
+#
 
 #measure temperature + give temperature
 compute     new all temp
-velocity    all create 1 3784983274923 temp new
+velocity    all create 100 3784983274923 temp new
+
 
 fix		1 all nve
 #fix_modify 1 temp new
 
-timestep	1.5e-10
+timestep 1e-4 #*10^-12
 thermo		1000
 thermo_modify	temp new
 
-#dump		0 boom atom 500 dump.friction
-#dump		1 all image 5000 image.*.jpg type type &
-#		zoom 1.0 adiam 1.5
 
-#timestep 1e-12
-run		20000
+#dump		0 all atom 10 dump.friction
+dump		1 all image 1000 image.*.jpg type type &
+		zoom 1.0 adiam 1.5
+
+run		5000
+velocity    all create 0 10000000 temp new
+run		5000
+timestep 1e-2
+#thermo_modify lost ignore flush yes
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+pair_style	yukawa 1.0 15.0 #kappa, cutoff
+#make screening length long to test
+#for thallium, this is 1.55e-24 Joules * metres
+pair_coeff	* * 129.5 #thallium-thallium
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		1000
+velocity    all create 4e-4 10000000 temp new
+run		3000
+velocity    all create 4e-4 10000000 temp new
+run		3000
+velocity    all create 4e-4 10000000 temp new
+run		3000
+velocity    all create 4e-4 10000000 temp new
+run		3000
+velocity    all create 4e-4 10000000 temp new
+run		3000
+velocity    all create 4e-4 10000000 temp new
+run		3000
+velocity    all create 4e-4 10000000 temp new
+run		30000
