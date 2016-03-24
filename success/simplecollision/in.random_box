@@ -1,0 +1,56 @@
+dimension 3
+boundary p p p 
+
+atom_style atomic
+neighbor	0.3 bin
+neigh_modify	delay 5
+
+lattice bcc 3.0
+region inthezone block 0 15 0 15 0 15
+create_box 3 inthezone
+
+mass 1 1.0
+mass 2 1.0
+mass 3 1.0
+
+region right block 14 15 0 15 0 15
+region left block 0 1 0 15 0 15
+region top block 0 15 0 15 14 15
+region bottom block 0 15 0 15 0 1
+region front block 0 15 14 15 0 15
+region back block 0 15 0 1 0 15
+region edges union 6 right left top bottom front back
+region center block 1 14 1 14 1 14
+region corner block 2 4 2 4 2 4
+region other block 11 13 11 13 11 13
+
+create_atoms	1 region corner
+create_atoms    2 region edges#type 2 is the boundary atoms
+create_atoms    3 region other
+
+pair_style	yukawa 2.0 2.5
+pair_coeff	* * 1.0 
+
+group mine type 1
+group otherside type 3
+group boundary type 2
+group boom union mine otherside
+
+#measure temperature + give temperature
+compute     new mine temp/partial 0 1 0
+velocity    mine set 0.1 0.1 0.1 
+velocity    otherside set -0.1 -0.1 -0.1 
+#velocity    mine create 100 3784983274923
+
+fix		1 all nve
+#fix		2 boundary setforce 0.0 0.0 0.0 #set boundary atoms static
+
+timestep	0.00015
+thermo		1000
+thermo_modify	temp new
+
+dump		0 boom atom 500 dump.friction
+dump		2 boom image 500 image.*.jpg type type &
+		zoom 1.0 adiam 1.5
+
+run		20000

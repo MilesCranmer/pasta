@@ -1,0 +1,144 @@
+#choose different screening lengths!
+#look up two point correlation
+#or another way to classify lattice vs non lattice
+#
+#page 201 in intro to modern stat. 
+units metal
+dimension 3
+boundary p p p
+
+atom_style atomic
+neighbor	0.3 bin
+neigh_modify	delay 5
+
+variable spacing equal 3.0
+variable xlo equal 0.0
+variable ylo equal 0.0
+variable zlo equal 0.0
+variable xhi equal 7.0
+variable yhi equal 7.0
+variable zhi equal 7.0
+variable charge equal 1.0
+variable mass equal 1.0
+variable pi equal 3.141593
+variable kb equal 8.6173e-5
+variable perm_kb_over_e_square equal 4762.24e10
+###############################################################
+variable gamma equal 10
+###############################################################
+lattice bcc ${spacing}
+region inthezone block ${xlo} ${xhi} ${ylo} ${yhi} ${zlo} ${zhi}
+region fill block 0 6.0 0 6.0 0 6.0
+create_box 1 inthezone
+
+mass 1 ${mass}
+
+create_atoms 1 region fill
+
+variable xl equal ${xhi}-${xlo}
+variable yl equal ${yhi}-${ylo}
+variable zl equal ${zhi}-${zlo}
+variable volume equal ${spacing}*${xl}*${yl}*${zl}
+variable numatoms equal 4941
+variable atomdensity equal ${numatoms}/${volume} #air is about 1e-5
+variable edensity equal ${charge}*(${atomdensity})
+variable radius equal (3/4/${pi}/${atomdensity})^(1.0/3.0)
+variable temperature equal (${charge})^2/(${radius})/${kb}/${gamma}
+variable kappa equal 1#(${edensity}/${perm_kb_over_e_square}/${temperature})^(1/2)
+
+print "have a density of ${atomdensity} ions per angstrom^3"
+print "need to get to ${temperature} kelvin for gamma=${gamma}" 
+print "kappa set to ${kappa}"
+pair_style	yukawa ${kappa} 8.0 #kappa (1/angstrom), cutoff (angstrom)
+#debye length = sqrt((permittivity)(boltzmann)(electron temperature)/(electron density))/(e-)
+
+#make screening length long to test
+#for thallium, this is 1.55e-24 Joules * metres
+#for hydrogen, get 2.31e-28 J m
+pair_coeff	* * 14.4 #H^+ with H^+
+#A=energy*distance, cutoff = distance
+
+group freezer type 1 
+#have to take into account density to get radius
+#and kappa is inverse debye length
+#start as a lattice, see if it stays.
+#
+
+#measure temperature + give temperature
+compute     new all temp
+velocity    all create 0 3784983274923 temp new
+
+fix		1 all nve
+#fix_modify 1 temp new
+
+timestep 1e-4 #*10^-12
+thermo		1000
+thermo_modify	temp new
+
+#dump		0 all atom 10 dump.friction
+dump		1 all image 1000 image.*.jpg type type &
+		zoom 1.0 adiam 1.5
+
+velocity    all create 0 3784983274923 temp new
+run		1000
+velocity    all create 0 3784983274923 temp new
+run		1000
+velocity    all create 0 3784983274923 temp new
+run		1000
+velocity    all create 0 3784983274923 temp new
+run		1000
+velocity    all create 0 3784983274923 temp new
+run		1000
+velocity    all create 0 3784983274923 temp new
+run		1000
+velocity    all create 0 3784983274923 temp new
+run		1000
+velocity    all create 0 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		1000
+velocity    all create ${temperature} 3784983274923 temp new
+run		5000
+velocity    all create ${temperature} 3784983274923 temp new
+run		5000
+velocity    all create ${temperature} 3784983274923 temp new
+run		5000
+velocity    all create ${temperature} 3784983274923 temp new
+run		5000
+compute myRDF all rdf 50
+fix 5 all ave/time 100 1 100 c_myRDF file gamma${gamma}.rdf mode vector
+run 100
+
+
+#mass = grams/mole
+#distance = Angstroms
+#time = picoseconds
+#energy = eV
+#velocity = Angstroms/picosecond
+#force = eV/Angstrom
+#torque = eV
+#temperature = Kelvin
+#pressure = bars
+#dynamic viscosity = Poise
+#charge = multiple of electron charge (1.0 is a proton)
+#dipole = charge*Angstroms
+#electric field = volts/Angstrom
+#density = gram/cm^dim
