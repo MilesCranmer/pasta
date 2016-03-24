@@ -1,8 +1,18 @@
-#choose different screening lengths!
-#look up two point correlation
-#or another way to classify lattice vs non lattice
-#
-#page 201 in intro to modern stat. 
+#mass = grams/mole
+#distance = Angstroms
+#time = picoseconds
+#energy = eV
+#velocity = Angstroms/picosecond
+#force = eV/Angstrom
+#torque = eV
+#temperature = Kelvin
+#pressure = bars
+#dynamic viscosity = Poise
+#charge = multiple of electron charge (1.0 is a proton)
+#dipole = charge*Angstroms
+#electric field = volts/Angstrom
+#density = gram/cm^dim
+
 units metal
 dimension 3
 boundary p p p
@@ -15,20 +25,20 @@ variable spacing equal 3.0
 variable xlo equal 0.0
 variable ylo equal 0.0
 variable zlo equal 0.0
-variable xhi equal 7.0
-variable yhi equal 7.0
-variable zhi equal 7.0
+variable xhi equal 10.0
+variable yhi equal 10.0
+variable zhi equal 10.0
 variable charge equal 1.0
 variable mass equal 1.0
 variable pi equal 3.141593
 variable kb equal 8.6173e-5
 variable perm_kb_over_e_square equal 4762.24e10
 ###############################################################
-variable gamma equal 10
+variable gamma equal 10000
 ###############################################################
 lattice bcc ${spacing}
 region inthezone block ${xlo} ${xhi} ${ylo} ${yhi} ${zlo} ${zhi}
-region fill block 0 6.0 0 6.0 0 6.0
+region fill block 0 8.0 0 8.0 0 8.0
 create_box 1 inthezone
 
 mass 1 ${mass}
@@ -66,7 +76,8 @@ group freezer type 1
 
 #measure temperature + give temperature
 compute     new all temp
-velocity    all create 0 3784983274923 temp new
+compute		getfep all fep ${temperature} pair yukawa kappa * * v_delta
+velocity    all create 0 42424242 temp new
 
 fix		1 all nve
 #fix_modify 1 temp new
@@ -74,71 +85,56 @@ fix		1 all nve
 timestep 1e-4 #*10^-12
 thermo		1000
 thermo_modify	temp new
+thermo_modify	format float getfep
 
 #dump		0 all atom 10 dump.friction
 dump		1 all image 1000 image.*.jpg type type &
 		zoom 1.0 adiam 1.5
 
-velocity    all create 0 3784983274923 temp new
+velocity    all create 0 42424242 temp new
 run		1000
-velocity    all create 0 3784983274923 temp new
+velocity    all create 0 42424242 temp new
 run		1000
-velocity    all create 0 3784983274923 temp new
+velocity    all create 0 42424242 temp new
 run		1000
-velocity    all create 0 3784983274923 temp new
+velocity    all create 0 42424242 temp new
 run		1000
-velocity    all create 0 3784983274923 temp new
+velocity    all create 0 42424242 temp new
 run		1000
-velocity    all create 0 3784983274923 temp new
+velocity    all create 0 42424242 temp new
 run		1000
-velocity    all create 0 3784983274923 temp new
+velocity    all create 0 42424242 temp new
 run		1000
-velocity    all create 0 3784983274923 temp new
+velocity    all create 0 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		1000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		5000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		5000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		5000
-velocity    all create ${temperature} 3784983274923 temp new
+velocity    all create ${temperature} 42424242 temp new
 run		5000
 compute myRDF all rdf 50
-fix 5 all ave/time 100 1 100 c_myRDF file gamma${gamma}.rdf mode vector
+fix 5 all ave/time 100 1 100 c_myRDF file gamma10000.rdf mode vector
 run 100
-
-
-#mass = grams/mole
-#distance = Angstroms
-#time = picoseconds
-#energy = eV
-#velocity = Angstroms/picosecond
-#force = eV/Angstrom
-#torque = eV
-#temperature = Kelvin
-#pressure = bars
-#dynamic viscosity = Poise
-#charge = multiple of electron charge (1.0 is a proton)
-#dipole = charge*Angstroms
-#electric field = volts/Angstrom
-#density = gram/cm^dim
